@@ -75,6 +75,8 @@ public class Scanner {
         setScanning(true);
         scanner.startScan(filters, settings, scan_callback);
     }
+
+
     private ScanCallback scan_callback = new ScanCallback() {
         public void onScanResult(int callbackType, final ScanResult result) {
             if (!scanning) {
@@ -98,4 +100,7 @@ public class Scanner {
         }
     }
 
+    public boolean isScanning(){
+        return scanning;
+    }
 }
