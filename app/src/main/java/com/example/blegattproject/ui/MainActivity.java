@@ -164,17 +164,115 @@ public class MainActivity extends AppCompatActivity implements ScanResultConsume
         }
     }
 
+    public void onScan(View view) {
+        if (!ble_scanner.isScanning()) {
+            Log.d(Constants.TAG, "Not currently scanning");
+            device_count=0;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    permissions_granted = false;
+                    requestLocationPermission();
+                } else {
+                    Log.i(Constants.TAG, "Location permission has already been granted. Starting scanning.");
+                    permissions_granted = true;
+                }
+            } else {
+                // the ACCESS_COARSE_LOCATION permission did not exist before M so....
+                permissions_granted = true;
+            }
+            startScanning();
+        } else {
+            Log.d(Constants.TAG, "Already scanning");
+            ble_scanner.stopScanning();
+        }
+    }
+
+    private void startScanning() {
+        if (permissions_granted) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ble_device_list_adapter.clear();
+                    ble_device_list_adapter.notifyDataSetChanged();
+                }
+            });
+            simpleToast(Constants.SCANNING,2000);
+            ble_scanner.startScanning(this, SCAN_TIMEOUT);
+        } else {
+            Log.i(Constants.TAG, "Permission to perform Bluetooth scanning was not yet granted");
+        }
+    }
+
+    private void requestLocationPermission() {
+        Log.i(Constants.TAG, "Location permission has NOT yet been granted. Requesting permission.");
+        if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)){
+            Log.i(Constants.TAG, "Displaying location permission rationale to provide additional context.");
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Permission Required");
+            builder.setMessage("Please grant Location access so this application can perform Bluetooth scanning");
+            builder.setPositiveButton(android.R.string.ok, null);
+            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                public void onDismiss(DialogInterface dialog) {
+                    Log.d(Constants.TAG, "Requesting permissions after explanation");
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+                }
+            });
+            builder.show();
+        } else {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_LOCATION) {
+            Log.i(Constants.TAG, "Received response for location permission request.");
+            // Check if the only required permission has been granted
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Location permission has been granted
+                Log.i(Constants.TAG, "Location permission has now been granted. Scanning.....");
+                permissions_granted = true;
+                if (ble_scanner.isScanning()) {
+                    startScanning();
+                }
+            }else{
+                Log.i(Constants.TAG, "Location permission was NOT granted.");
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    private void simpleToast(String message, int duration) {
+        toast = Toast.makeText(this, message, duration);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
+    }
 
     @Override
     public void candidateDevice(BluetoothDevice device, byte[] scan_record, int rssi) {
+
+        runOnUiThread(new Runnable() { @Override
+            public void run() {
+                ble_device_list_adapter.addDevice(device);
+                ble_device_list_adapter.notifyDataSetChanged();
+                device_count++;
+            }
+        });
     }
 
     @Override
     public void scanningStarted() {
+        setScanState(true);
     }
 
     @Override
     public void scanningStopped() {
+        if (toast != null) {
+            toast.cancel();
+        }
+        setScanState(false);
     }
 
 
