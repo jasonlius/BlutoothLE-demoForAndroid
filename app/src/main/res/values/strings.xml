@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BleGattProject</string>
+    <string name="app_name">翔哥牌蓝牙</string>
     <string name="screen_title_main">设备列表</string>
     <string name="action_settings">设置</string>
 </resources>

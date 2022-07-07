@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements ScanResultConsume
                 if (ble_scanning) {
                     ble_scanner.stopScanning();
                 }
-
                 BluetoothDevice device = ble_device_list_adapter.getDevice(position);
                 if (toast != null) {
                     toast.cancel();
@@ -173,7 +172,13 @@ public class MainActivity extends AppCompatActivity implements ScanResultConsume
                         != PackageManager.PERMISSION_GRANTED) {
                     permissions_granted = false;
                     requestLocationPermission();
-                } else {
+                }
+                if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    permissions_granted = false;
+                    requestConnectionPermission();
+                }
+                else {
                     Log.i(Constants.TAG, "Location permission has already been granted. Starting scanning.");
                     permissions_granted = true;
                 }
@@ -204,6 +209,25 @@ public class MainActivity extends AppCompatActivity implements ScanResultConsume
         }
     }
 
+    private void requestConnectionPermission() {
+        Log.i(Constants.TAG, "connection permission has NOT yet been granted. Requesting permission.");
+        if (shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_CONNECT)){
+            Log.i(Constants.TAG, "Displaying connection permission rationale to provide additional context.");
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Permission Required");
+            builder.setMessage("Please grant Location access so this application can perform Bluetooth scanning");
+            builder.setPositiveButton(android.R.string.ok, null);
+            builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                public void onDismiss(DialogInterface dialog) {
+                    Log.d(Constants.TAG, "Requesting permissions after explanation");
+                    requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, REQUEST_LOCATION);
+                }
+            });
+            builder.show();
+        } else {
+            requestPermissions(new String[]{Manifest.permission.BLUETOOTH_CONNECT}, REQUEST_LOCATION);
+        }
+    }
     private void requestLocationPermission() {
         Log.i(Constants.TAG, "Location permission has NOT yet been granted. Requesting permission.");
         if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)){
