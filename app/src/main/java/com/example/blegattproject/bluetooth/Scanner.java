@@ -70,6 +70,10 @@ public class Scanner {
         Log.d(Constants.TAG,"扫描中");
         List<ScanFilter> filters;
         filters = new ArrayList<ScanFilter>();
+        ScanFilter filter1 = new ScanFilter.Builder().setDeviceName("BDSK").build();
+        ScanFilter filter2 = new ScanFilter.Builder().setDeviceName("XaingGeGe").build();
+        filters.add(filter1);
+        filters.add(filter2);
         ScanSettings settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
 
         setScanning(true);
