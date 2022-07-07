@@ -14,13 +14,14 @@
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="BLE GATT客户端"
+        android:background="#673AB7"
         android:gravity="center"
         android:paddingTop="10dp"
-        android:textSize="20dp"
         android:paddingBottom="10dp"
-        android:textColor="@color/black"
-    />
+        android:text="蓝牙GATT客户端"
+        android:textAppearance="@style/Theme.BleGattProject"
+        android:textColor="@color/white"
+        android:textSize="20dp" />
     <ListView
         android:id="@+id/deviceList"
         android:layout_width="match_parent"
